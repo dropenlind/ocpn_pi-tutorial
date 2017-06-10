@@ -33,7 +33,7 @@
 #include <wx/aui/aui.h>
 
 #include "minimal_pi.h"
-#include "demowindow.h"
+#include "minimalwindow.h"
 
 
 // the class factories, used to create and destroy instances of the PlugIn
@@ -100,11 +100,11 @@ int minimal_pi::Init(void)
   m_hide_id = AddCanvasContextMenuItem(pmih, this );
   SetCanvasContextMenuItemViz(m_hide_id, false);
 
-  m_pdemo_window = new demoWindow(m_parent_window, wxID_ANY);
+  m_pdemo_window = new minimalWindow(m_parent_window);
 
   m_AUImgr = GetFrameAuiManager();
   m_AUImgr->AddPane(m_pdemo_window);
-  m_AUImgr->GetPane(m_pdemo_window).Name(_T("Demo Window Name"));
+  // m_AUImgr->GetPane(m_pdemo_window).Name(_T("Demo Window Name"));
 
   m_AUImgr->GetPane(m_pdemo_window).Float();
   m_AUImgr->GetPane(m_pdemo_window).FloatingPosition(300,30);
@@ -206,25 +206,6 @@ void minimal_pi::OnContextMenuItemCallback(int id)
   pane.Show(false);
   m_AUImgr->Update();
   }
-
-/*
-  if(NULL == m_pdemo_window)
-  {
-    m_pdemo_window = new demoWindow(m_parent_window, wxID_ANY);
-
-    SetCanvasContextMenuItemViz(m_hide_id, true);
-    SetCanvasContextMenuItemViz(m_show_id, false);
-  }
-  else
-  {
-    m_pdemo_window->Close();
-    m_pdemo_window->Destroy();
-    m_pdemo_window = NULL;
-
-    SetCanvasContextMenuItemViz(m_hide_id, false);
-    SetCanvasContextMenuItemViz(m_show_id, true);
-  }
-*/
 }
 
 void minimal_pi::UpdateAuiStatus(void)

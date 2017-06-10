@@ -39,8 +39,7 @@
 
 #include "ocpn_plugin.h"
 
-class demoWindow;
-
+#include "minimalwindow.h"
 //----------------------------------------------------------------------------------------------------------
 //    The PlugIn Class Definition
 //----------------------------------------------------------------------------------------------------------
@@ -87,7 +86,7 @@ public:
 private:
       wxWindow         *m_parent_window;
 
-      demoWindow       *m_pdemo_window;
+      minimalWindow    *m_pdemo_window;
       wxAuiManager     *m_AUImgr;
       int               m_show_id;
       int               m_hide_id;

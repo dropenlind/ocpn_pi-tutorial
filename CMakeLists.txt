@@ -27,11 +27,9 @@ INCLUDE("cmake/PluginConfigure.cmake")
 
 SET(SRC_MINIMAL
         src/ocpn_plugin.h
-        src/icons.h
         src/icons.cpp
-        src/demowindow.h
-        src/demowindow.cpp
-        src/minimal_pi.h
+        src/minimalgui.cpp
+        src/minimalwindow.cpp
         src/minimal_pi.cpp
   )
 
