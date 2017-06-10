@@ -49,7 +49,8 @@ class demoWindow;
 class minimal_pi : public opencpn_plugin_114
 {
 public:
-      minimal_pi(void *ppimgr):opencpn_plugin_114(ppimgr){}
+      minimal_pi(void *ppimgr);
+      ~minimal_pi();
 
 //    The required PlugIn Methods
       int Init(void);
@@ -59,6 +60,8 @@ public:
       int GetAPIVersionMinor();
       int GetPlugInVersionMajor();
       int GetPlugInVersionMinor();
+
+      wxBitmap* GetPlugInBitmap();
 
       wxString GetCommonName();
       wxString GetShortDescription();

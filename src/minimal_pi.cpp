@@ -57,14 +57,25 @@ extern "C" DECL_EXP void destroy_pi(opencpn_plugin* p)
 //
 //---------------------------------------------------------------------------------------------------------
 
-
+#include "icons.h"
 
 //---------------------------------------------------------------------------------------------------------
 //
 //          PlugIn initialization and de-init
 //
 //---------------------------------------------------------------------------------------------------------
+minimal_pi::minimal_pi(void *ppimgr):opencpn_plugin_114(ppimgr)
+{
+  initialize_images();
+}
 
+
+minimal_pi::~minimal_pi()
+{
+  delete _img_logo_pi;
+  delete _img_logo;
+  delete m_pdemo_window;
+}
 
 int minimal_pi::Init(void)
 {
@@ -140,20 +151,25 @@ int minimal_pi::GetPlugInVersionMinor()
   return PLUGIN_VERSION_MINOR;
 }
 
+wxBitmap *minimal_pi::GetPlugInBitmap()
+{
+      return _img_logo_pi;
+}
+
 wxString minimal_pi::GetCommonName()
 {
-  return _("Demo");
+  return _("Minimal");
 }
 
 wxString minimal_pi::GetShortDescription()
 {
-  return _("Demo PlugIn for OpenCPN");
+  return _("Minimal PlugIn for OpenCPN");
 }
 
 wxString minimal_pi::GetLongDescription()
 {
-  return _("Demo PlugIn for OpenCPN\n\
-demonstrates PlugIn processing of NMEA messages.");
+  return _("Minimal PlugIn for OpenCPN\n\
+to show how to write an easy plugin.");
 
 }
 

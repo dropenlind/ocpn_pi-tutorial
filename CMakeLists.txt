@@ -26,6 +26,10 @@ SET( wxWidgets_USE_STATIC OFF)
 INCLUDE("cmake/PluginConfigure.cmake")
 
 SET(SRC_MINIMAL
+        src/ocpn_plugin.h
+        src/icons.h
+        src/icons.cpp
+        src/minimal_pi.h
         src/minimal_pi.cpp
   )
 
