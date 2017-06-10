@@ -154,7 +154,7 @@ int minimal_pi::GetPlugInVersionMinor()
 
 wxBitmap *minimal_pi::GetPlugInBitmap()
 {
-      return _img_logo_pi;
+  return _img_logo_pi;
 }
 
 wxString minimal_pi::GetCommonName()
