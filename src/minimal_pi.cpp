@@ -85,6 +85,19 @@ int minimal_pi::Init(void)
   // Get a pointer to the opencpn display canvas, to use as a parent for windows created
   m_parent_window = GetOCPNCanvasWindow();
 
+  // recover configuration object to load and save configuration.
+  m_pconfig = GetOCPNConfigObject();
+
+
+  LoadConfig();
+
+  // Add plugin icon to toolbar
+  if (m_bShowToolbarIcon) {
+    m_iToolbarIconID = InsertPlugInTool(_T(""), _img_logo, _img_logo,
+                              wxITEM_CHECK, _("Minimal plugin"),_T(""),
+                              NULL, -1, 0, this);
+  }
+
   // Create the Context Menu Items
 
   //    In order to avoid an ASSERT on msw debug builds,
@@ -92,19 +105,18 @@ int minimal_pi::Init(void)
   //    The Items will be re-parented when added to the real context meenu
   wxMenu dummy_menu;
 
-  wxMenuItem *pmi = new wxMenuItem(&dummy_menu, -1, _("Show PlugIn DemoWindow"));
-  m_show_id = AddCanvasContextMenuItem(pmi, this );
-  SetCanvasContextMenuItemViz(m_show_id, true);
+  wxMenuItem *pmi = new wxMenuItem(&dummy_menu, -1, _("Activate Button1"));
+  m_iButton1ContextActiveID = AddCanvasContextMenuItem(pmi, this );
+  SetCanvasContextMenuItemViz(m_iButton1ContextActiveID, true);
 
-  wxMenuItem *pmih = new wxMenuItem(&dummy_menu, -1, _("Hide PlugIn DemoWindow"));
-  m_hide_id = AddCanvasContextMenuItem(pmih, this );
-  SetCanvasContextMenuItemViz(m_hide_id, false);
+  wxMenuItem *pmih = new wxMenuItem(&dummy_menu, -1, _("Deactivate Button"));
+  m_iButton1ContextDeactiveID = AddCanvasContextMenuItem(pmih, this );
+  SetCanvasContextMenuItemViz(m_iButton1ContextDeactiveID, false);
 
   m_pdemo_window = new minimalWindow(m_parent_window);
 
   m_AUImgr = GetFrameAuiManager();
   m_AUImgr->AddPane(m_pdemo_window);
-  // m_AUImgr->GetPane(m_pdemo_window).Name(_T("Demo Window Name"));
 
   m_AUImgr->GetPane(m_pdemo_window).Float();
   m_AUImgr->GetPane(m_pdemo_window).FloatingPosition(300,30);
@@ -118,17 +130,27 @@ int minimal_pi::Init(void)
 
   return (
            INSTALLS_CONTEXTMENU_ITEMS     |
+           WANTS_TOOLBAR_CALLBACK         |
+           INSTALLS_TOOLBAR_TOOL          |
            USES_AUI_MANAGER
         );
 }
 
 bool minimal_pi::DeInit(void)
 {
+
   m_AUImgr->DetachPane(m_pdemo_window);
   if(m_pdemo_window)
   {
     m_pdemo_window->Close();
   }
+
+  m_bShowPluginPanel = false;
+
+  SaveConfig();
+
+  RequestRefresh(m_parent_window);
+
   return true;
 }
 
@@ -178,55 +200,13 @@ to show how to write an easy plugin.");
 void minimal_pi::OnContextMenuItemCallback(int id)
 {
   wxLogMessage(_T("minimal_pi OnContextMenuCallBack()"));
- ::wxBell();
+  ::wxBell();
 
-  //  Note carefully that this is a "reference to a wxAuiPaneInfo classs instance"
-  //  Copy constructor (i.e. wxAuiPaneInfo pane = m_AUImgr->GetPane(m_pdemo_window);) will not work
-
-  wxAuiPaneInfo &pane = m_AUImgr->GetPane(m_pdemo_window);
-  if(!pane.IsOk())
-    return;
-
-  if(!pane.IsShown())
-  {
-//            printf("show\n");
-    SetCanvasContextMenuItemViz(m_hide_id, true);
-    SetCanvasContextMenuItemViz(m_show_id, false);
-
-    pane.Show(true);
-    m_AUImgr->Update();
-
-  }
-  else
-  {
-//            printf("hide\n");
-  SetCanvasContextMenuItemViz(m_hide_id, false);
-  SetCanvasContextMenuItemViz(m_show_id, true);
-
-  pane.Show(false);
-  m_AUImgr->Update();
-  }
 }
 
 void minimal_pi::UpdateAuiStatus(void)
 {
-  //    This method is called after the PlugIn is initialized
-  //    and the frame has done its initial layout, possibly from a saved wxAuiManager "Perspective"
-  //    It is a chance for the PlugIn to syncronize itself internally with the state of any Panes that
-  //    were added to the frame in the PlugIn ctor.
-
-  //    We use this callback here to keep the context menu selection in sync with the window state
-
-
-  wxAuiPaneInfo &pane = m_AUImgr->GetPane(m_pdemo_window);
-  if(!pane.IsOk())
-    return;
-
-  printf("update %d\n",pane.IsShown());
-
-  SetCanvasContextMenuItemViz(m_hide_id, pane.IsShown());
-  SetCanvasContextMenuItemViz(m_show_id, !pane.IsShown());
-
+  return;
 }
 
 bool minimal_pi::RenderOverlay(wxDC &dc, PlugIn_ViewPort *vp)
@@ -267,7 +247,21 @@ void minimal_pi::ShowPreferencesDialog( wxWindow* parent )
 
 void minimal_pi::OnToolbarToolCallback(int id)
 {
+  wxLogMessage(_T("minimal_pi OnToolbarToolCallback()"));
+  ::wxBell();
 
+  //  Note carefully that this is a "reference to a wxAuiPaneInfo classs instance"
+  //  Copy constructor (i.e. wxAuiPaneInfo pane = m_AUImgr->GetPane(m_pdemo_window);) will not work
+
+  wxAuiPaneInfo &pane = m_AUImgr->GetPane(m_pdemo_window);
+  if(!pane.IsOk())
+    return;
+
+  // toggle show panel
+  m_bShowPluginPanel = !m_bShowPluginPanel;
+
+  pane.Show(m_bShowPluginPanel);
+  m_AUImgr->Update();
 }
 
 void minimal_pi::SetPluginMessage(wxString &message_id, wxString &message_body)
@@ -278,4 +272,34 @@ void minimal_pi::SetPluginMessage(wxString &message_id, wxString &message_body)
 void minimal_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex &pfix)
 {
 
+}
+
+bool minimal_pi::LoadConfig(void)
+{
+  wxFileConfig *pConf = (wxFileConfig *)m_pconfig;
+
+  if (pConf) {
+    pConf->SetPath(_T("/Settings/minimal_pi"));
+
+    pConf->Read(_T("ShowToolBarIcon"), &m_bShowToolbarIcon, 1);
+    pConf->Read(_T("ShowPluginPanel"), &m_bShowPluginPanel, 0);
+
+    return true;
+  }
+  return false;
+}
+
+bool minimal_pi::SaveConfig(void)
+{
+  wxFileConfig *pConf = (wxFileConfig *)m_pconfig;
+
+  if (pConf) {
+    pConf->SetPath(_T("/Settings/minimal_pi"));
+
+    pConf->Write(_T("ShowToolBarIcon"), m_bShowToolbarIcon);
+    pConf->Read(_T("ShowPluginPanel"), m_bShowPluginPanel);
+
+    return true;
+  }
+  return false;
 }

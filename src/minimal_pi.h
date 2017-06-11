@@ -31,6 +31,8 @@
   #include "wx/wx.h"
 #endif //precompiled headers
 
+#include "wx/fileconf.h"
+
 #define     PLUGIN_VERSION_MAJOR    0
 #define     PLUGIN_VERSION_MINOR    1
 
@@ -86,10 +88,17 @@ public:
 private:
       wxWindow         *m_parent_window;
 
+      bool              LoadConfig(void);
+      bool              SaveConfig(void);
+      wxFileConfig     *m_pconfig;
+      bool              m_bShowToolbarIcon;
+      int               m_iToolbarIconID;
+      bool              m_bShowPluginPanel;
+
       minimalWindow    *m_pdemo_window;
       wxAuiManager     *m_AUImgr;
-      int               m_show_id;
-      int               m_hide_id;
+      int               m_iButton1ContextActiveID;
+      int               m_iButton1ContextDeactiveID;
 
 };
 
